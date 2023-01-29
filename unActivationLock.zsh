@@ -5,7 +5,7 @@
 
 # This script checks to see if a machine is Activation locked by a user, and if so,
 # it will try to determine if the currently logged in user is the one associated with 
-# the activation lock, and if so, prompt the user to turn off Find My Mac.
+# the activation lock, and prompt the user to turn off Find My Mac.
 
 ########################################################################################
 # Created by Brian Van Peski - macOS Adventures
