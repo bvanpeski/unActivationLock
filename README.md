@@ -1,10 +1,10 @@
-# ActivationUnlock
+# UnActivationLock
 A tool for helping prevent user-based Activation Lock issues.
 <img src="images/activationunlock_light.png" img align="left" width=30%>
 
-This script checks to see if a machine is Activation locked, and if so, it will try to determine if the currently logged in user is the one associated with the activation lock, and prompt the user to turn off Find My Mac. If the device is enrolled in an MDM, this will give that MDM solution enough time to prevent future activation locks and gather an activation lock bypass code should the activation lock ever get turned back on.
+This script checks to see if a machine has Activation Lock enabled, and if so, it will try to determine if the currently logged in user is the one associated with the activation lock, and prompt the user to turn off Find My Mac. If the device is enrolled in an MDM, this will give that MDM solution enough time to prevent future activation locks and gather an activation lock bypass code should the activation lock ever get turned back on.
 
-This script is designed to assist with *existing* devices that were enrolled into an MDM when a user on the device is already logged into iCloud with Find My Mac enabled at the time of enrollment. To prevent activation lock on NEW enrollments, I **highly suggest** you enroll your devices using Automated Device Enrollment. That is the best way to avoid activation lock from happening in the first place. You can find more thoughts around user-based Activation Lock over on the [blog].
+This script is designed to assist with *existing* devices that were enrolled into an MDM when a user on the device is already logged into iCloud with Find My Mac enabled at the time of enrollment. To prevent activation lock on NEW enrollments, I **highly suggest** you enroll your devices using Automated Device Enrollment. That is the best way to avoid activation lock from happening in the first place. You can find more thoughts around user-based Activation Lock over on the [blog](https://www.macosadventures.com/2023/01/30/a-guide-to-disabling-preventing-icloud-activation-lock).
 
 This script has been tested (somewhat) on macOS Montery 12.4 and macOS Ventura 13.1 on M1 Macs. This script has not been tested at scale or with multiple MDMs. iCloud can be a fickle thing sometimes, so this script is provided with no guarantees and the understanding that you use it at your own risk.
 
@@ -18,7 +18,7 @@ I've included the ability to add an appIcon to the messaging. You can deploy and
 `/System/Library/PrivateFrameworks/AOSUI.framework/Versions/A/Resources/findmy.icns`
 `/System/Library/PrivateFrameworks/AOSUI.framework/Versions/A/Resources/iCloud.icns`
 
-I've set the iCloud icon as the default, since that helps the end-user visually understand the section of System Settings they need to be looking for, but feel free to customize to suit your needs.
+I've set the iCloud icon as the default, since that helps the end-user visually understand the section of System Settings they need to be looking for, but feel free to customize this to suit your needs.
 
 **Pro Tip:** osascript dialogs look pretty boring and dated these days in macOS, but adding a path to an app icon goes a long ways towards making it look less terrible.
 
