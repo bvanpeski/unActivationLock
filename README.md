@@ -18,7 +18,7 @@ I've included the ability to add an appIcon to the messaging. You can deploy and
 `/System/Library/PrivateFrameworks/AOSUI.framework/Versions/A/Resources/findmy.icns`
 `/System/Library/PrivateFrameworks/AOSUI.framework/Versions/A/Resources/iCloud.icns`
 
-I've set the FindMy icon as the default, since that helps the end-user visually understand the section of System Settings they need to be looking for, but feel free to customize to suit your needs.
+I've set the iCloud icon as the default, since that helps the end-user visually understand the section of System Settings they need to be looking for, but feel free to customize to suit your needs.
 
 **Pro Tip:** osascript dialogs look pretty boring and dated these days in macOS, but adding a path to an app icon goes a long ways towards making it look less terrible.
 
