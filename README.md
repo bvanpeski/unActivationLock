@@ -6,7 +6,7 @@ This script checks to see if a machine has Activation Lock enabled, and if so, i
 
 This script is designed to assist with *existing* devices that were enrolled into an MDM when a user on the device is already logged into iCloud with Find My Mac enabled at the time of enrollment. To prevent activation lock on NEW enrollments, I **highly suggest** you enroll your devices using Automated Device Enrollment. That is the best way to avoid activation lock from happening in the first place. You can find more thoughts around user-based Activation Lock over on the [blog](https://www.macosadventures.com/2023/01/30/a-guide-to-disabling-preventing-icloud-activation-lock).
 
-This script has been tested (somewhat) on macOS Montery 12.4 and macOS Ventura 13.1 on M1 Macs. This script has not been tested at scale or with multiple MDMs. iCloud can be a fickle thing sometimes, so this script is provided with no guarantees and the understanding that you use it at your own risk.
+This script has been tested (somewhat) on macOS Montery 12.4 and macOS Ventura 13.1 on M1 and Intel Macs. This script has not been tested at scale or with multiple MDMs. iCloud can be a fickle thing sometimes, so this script is provided with no guarantees and the understanding that you use it at your own risk.
 
 ## Customizing the dialog
 While this script was designed with Kandji in mind, it is designed to be plug-and-play for just about any MDM.
