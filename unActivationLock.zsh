@@ -28,7 +28,7 @@ dialogTitle="Turn off Find My Mac"
 dialogMessage="This company device is currently locked to your iCloud account. Please turn off Find My Mac under iCloud > Find My Mac."
 appIcon="/System/Library/PrivateFrameworks/AOSUI.framework/Versions/A/Resources/findmy.icns" #Path to app icon for messaging (optional)
 
-DisallowFindMy=true #Change to true if you want to *always* prompt the user when Find My Mac is enabled, regardless of the user-based activation lock status.
+DisallowFindMy=false #Change to true if you want to *always* prompt the user when Find My Mac is enabled, regardless of the user-based activation lock status.
 
 wait_time=40 #How many seconds to wait until re-prompting the user.
 timeout=90 #How long to try prompting the user until giving up.
