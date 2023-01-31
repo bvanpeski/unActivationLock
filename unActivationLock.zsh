@@ -10,8 +10,8 @@
 ########################################################################################
 # Created by Brian Van Peski - macOS Adventures
 ########################################################################################
-# Current version: 1.4 | See CHANGELOG for full version history.
-# Updated: 01/22/2023
+# Current version: 1.5 (draft) | See CHANGELOG for full version history.
+# Updated: 01/30/2023
 
 # Set logging - Send logs to stdout as well as Unified Log
 # Use 'log show --process "logger"'to view logs activity.
@@ -26,7 +26,12 @@ function LOGGING {
 # Messaging
 dialogTitle="Turn off Find My Mac"
 dialogMessage="This company device is currently locked to your iCloud account. Please turn off Find My Mac under iCloud > Find My Mac."
-appIcon="/System/Library/PrivateFrameworks/AOSUI.framework/Versions/A/Resources/iCloud.icns" #Path to app icon for messaging (optional)
+appIcon="/System/Library/PrivateFrameworks/AOSUI.framework/Versions/A/Resources/findmy.icns" #Path to app icon for messaging (optional)
+
+DisallowFindMy=true #Change to true if you want to *always* prompt the user when Find My Mac is enabled, regardless of the user-based activation lock status.
+
+wait_time=40 #How many seconds to wait until re-prompting the user.
+timeout=90 #How long to try prompting the user until giving up.
 
 ##############################################################
 # VARIABLES & FUNCTIONS
@@ -51,6 +56,7 @@ for user in "${USER_LIST[@]}"; do
       if [[ $FindMyEnabled == "true" ]]; then
       LOGGING "Find My is enabled for user $user"
       FindMyUser="$user"
+      FindMyEmail=$(/usr/libexec/PlistBuddy -c 'print Accounts:0:AccountID' "/Users/$user/Library/Preferences/MobileMeAccounts.plist")
       fi
     else
       #LOGGING "No iCloud login found for $user"
@@ -84,15 +90,19 @@ if pgrep "Liftoff" >/dev/null; then
 elif [[ $activationLock == "Enabled" ]]; then
   LOGGING "--- User-Based Activation Lock is: Enabled. Checking local users..."
   UserLookup
-  #echo "TEST - $plist $FindMyEnabled $FindMyUser $currentUser"
   #Determine the FindMy enabled user and see if it matches the currently logged in user.
+  SECONDS=0
   if [[ -f "$plist" && "$FindMyUser" == "$currentUser" ]]; then
     until [[ $activationLock == "Disabled" ]]
       do
+        if (( $SECONDS > $timeout )); then
+          LOGGING "Prompts have been ignored for more than $timeout seconds. Giving up..."
+          exit 1
+        fi
         LOGGING "--- Found logged in iCloud account '$FindMyUser'... Presenting pane to user and requesting user to log out..."
-        open "x-apple.systempreferences:com.apple.preferences.AppleIDPrefPane"
+        open "x-apple.systempreferences:com.apple.preferences.AppleIDPrefPane?iCloud"
         UserDialog
-        sleep 40
+        sleep $wait_time
         export activationLock=$(/usr/sbin/system_profiler SPHardwareDataType | awk '/Activation Lock Status/{print $NF}')
       done
     LOGGING "Activation Lock Status: $activationLock"
@@ -103,13 +113,30 @@ elif [[ $activationLock == "Enabled" ]]; then
       exit 1
     else
       LOGGING "--- The currently logged in user: '$currentUser' is not the user associated with the Activation Lock.
-      --- Activation Lock status is: $activationLock, and is locked by user '$FindMyUser'.
+      --- Activation Lock status is: $activationLock, and is locked by user '$FindMyUser' with account '$FindMyEmail'.
       --- Script will continue to run until the appropriate user logs in and is prompted to turn off Find My.
       Exiting..."
       exit 1
   fi
 else
+  UserLookup
+  if [[ $DisallowFindMy == true && "$FindMyUser" == "$currentUser" ]]; then
+    until [[ $FindMyEnabled == false ]]
+      do
+        if (( $SECONDS > $timeout )); then
+        LOGGING "Prompts have been ignored for more than 90 seconds. Giving up..."
+        exit 1
+        fi
+        LOGGING "--- Found logged in iCloud account for user '$FindMyUser' with account '$FindMyEmail'... Presenting pane to user and requesting user to log out of Find My Mac."
+        open "x-apple.systempreferences:com.apple.preferences.AppleIDPrefPane?iCloud"
+        UserDialog
+        sleep $wait_time
+        #export FindMyStatus
+        export FindMyEnabled=$(/usr/libexec/PlistBuddy -c print "$plist" | grep -A1 "FIND_MY_MAC" | awk 'FNR == 2 {print $3}')
+      done
+  fi
   LOGGING "--- User-based Activation Lock not enabled.
+  --- Find My Mac status for $currentUser is: $FindMyEnabled.
   Exiting..."
- exit 0
+  exit 0
 fi
