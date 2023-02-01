@@ -101,6 +101,7 @@ elif [[ $activationLock == "Enabled" ]]; then
         fi
         LOGGING "--- Found logged in iCloud account '$FindMyUser'... Presenting pane to user and requesting user to log out..."
         open "x-apple.systempreferences:com.apple.preferences.AppleIDPrefPane?iCloud"
+        osascript -e 'tell application "System Settings"' -e 'activate' -e 'end tell'
         UserDialog
         sleep $wait_time
         export activationLock=$(/usr/sbin/system_profiler SPHardwareDataType | awk '/Activation Lock Status/{print $NF}')
@@ -124,11 +125,12 @@ else
     until [[ $FindMyEnabled == false ]]
       do
         if (( $SECONDS > $timeout )); then
-        LOGGING "Prompts have been ignored for more than 90 seconds. Giving up..."
+        LOGGING "Prompts have been ignored for more than $timeout seconds. Giving up..."
         exit 1
         fi
         LOGGING "--- Found logged in iCloud account for user '$FindMyUser' with account '$FindMyEmail'... Presenting pane to user and requesting user to log out of Find My Mac."
         open "x-apple.systempreferences:com.apple.preferences.AppleIDPrefPane?iCloud"
+        osascript -e 'tell application "System Settings"' -e 'activate' -e 'end tell'
         UserDialog
         sleep $wait_time
         #export FindMyStatus
