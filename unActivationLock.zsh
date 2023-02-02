@@ -52,6 +52,7 @@ FindMyEnabled=$(/usr/libexec/PlistBuddy -c print "$plist" | grep -A1 "FIND_MY_MA
 KandjiAgent="/Library/Kandji/Kandji Agent.app"
 #Path to SwiftDialog
 dialogPath="/usr/local/bin/dialog"
+dialogApp="/Library/Application Support/Dialog/Dialog.app"
 
 UserLookup (){
 ## Fetch all local user accounts, return account with iCloud FindMyStatus enabled.
@@ -90,7 +91,7 @@ UserDialog (){
   if [[ -d "$KandjiAgent" ]]; then
     /usr/local/bin/kandji display-alert --title "$dialogTitle" --message "$dialogMessage" ${iconCMD[@]}
   #No Kandji, but if SwiftDialog is installed then use SwiftDialog
-  elif [[ -e "$dialogPath" ]]; then
+  elif [[ -e "$dialogPath" && -e "$dialogApp" ]]; then
     "$dialogPath" --title "$dialogTitle" --message "$dialogMessage" ${swiftDialogOptions[@]} ${iconCMD[@]}
   #No Kandji and no SwiftDialog so default to osascript
   elif [ -e "$appIcon" ]; then
