@@ -1,4 +1,5 @@
 #!/bin/zsh
+#set -x
 
 # UnActivationLock
 # An Activation Lock / iCloud Logout Prompt
@@ -27,6 +28,13 @@ function LOGGING {
 dialogTitle="Turn off Find My Mac"
 dialogMessage="This company device is currently locked to your iCloud account. Please turn off Find My Mac under iCloud > Find My Mac."
 appIcon="/System/Library/PrivateFrameworks/AOSUI.framework/Versions/A/Resources/findmy.icns" #Path to app icon for messaging (optional)
+# SwiftDialog Options
+swiftDialogOptions=(
+  --mini
+  --ontop
+  --moveable
+)
+
 
 DisallowFindMy=false #Change to true if you want to *always* prompt the user when Find My Mac is enabled, regardless of the user-based activation lock status.
 
@@ -42,6 +50,9 @@ plist="/Users/$currentUser/Library/Preferences/MobileMeAccounts.plist"
 DEPStatus=$(profiles status -type enrollment | grep "Enrolled via DEP" | awk '{print $4}')
 FindMyEnabled=$(/usr/libexec/PlistBuddy -c print "$plist" | grep -A1 "FIND_MY_MAC" | awk 'FNR == 2 {print $3}' ) #Checks dictionary to make sure proper user is targeted [if FindMy = then, continue]
 KandjiAgent="/Library/Kandji/Kandji Agent.app"
+#Path to SwiftDialog
+dialogPath="/usr/local/bin/dialog"
+dialogApp="/Library/Application Support/Dialog/Dialog.app"
 
 UserLookup (){
 ## Fetch all local user accounts, return account with iCloud FindMyStatus enabled.
@@ -67,15 +78,29 @@ done
 UserDialog (){
   # Check if $appIcon file exists on system, if not use standard dialog. If
   # Kandji agent is not installed, default to applescript dialog.
-  if [[ -f $appIcon && ! -d $KandjiAgent ]]; then
+  
+  #First check if the app icon exists
+  if [ -e "$appIcon" ]; then
+    iconCMD=(--icon "$appIcon")
+  else
+    #If the icon file doesn't exist, set an empty array
+    iconCMD=()
+  fi
+
+  #If KandjiAgent is installed, use Kandji
+  if [[ -d "$KandjiAgent" ]]; then
+    /usr/local/bin/kandji display-alert --title "$dialogTitle" --message "$dialogMessage" ${iconCMD[@]}
+  #No Kandji, but if SwiftDialog is installed then use SwiftDialog
+  elif [[ -e "$dialogPath" && -e "$dialogApp" ]]; then
+    "$dialogPath" --title "$dialogTitle" --message "$dialogMessage" ${swiftDialogOptions[@]} ${iconCMD[@]}
+  #No Kandji and no SwiftDialog so default to osascript
+  elif [ -e "$appIcon" ]; then
     /usr/bin/osascript -e 'display dialog "'$dialogMessage'" with title "'$dialogTitle'" with icon POSIX file "'$appIcon'" buttons {"Okay"} default button 1 giving up after 15'
-  elif [[ -f $appIcon && -d $KandjiAgent ]]; then
-    /usr/local/bin/kandji display-alert --title ''$dialogTitle'' --message ''$dialogMessage'' --icon $appIcon
-  elif [[ ! -f $appIcon && -d $KandjiAgent ]]; then
-    /usr/local/bin/kandji display-alert --title ''$dialogTitle'' --message ''$dialogMessage''
+  #Else No Kandji, no SwiftDialog, and no appicon. Use osascript with the default icon
   else
     /usr/bin/osascript -e 'display dialog "'$dialogMessage'" with title "'$dialogTitle'" buttons {"Okay"} default button 1 giving up after 15'
   fi
+
 }
 
 ##############################################################
