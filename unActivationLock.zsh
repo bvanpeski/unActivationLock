@@ -1,5 +1,4 @@
 #!/bin/zsh
-#set -x
 
 # UnActivationLock
 # An Activation Lock / iCloud Logout Prompt
@@ -11,8 +10,8 @@
 ########################################################################################
 # Created by Brian Van Peski - macOS Adventures
 ########################################################################################
-# Current version: 1.5 (draft) | See CHANGELOG for full version history.
-# Updated: 01/30/2023
+# Current version: 1.5 | See CHANGELOG for full version history.
+# Updated: 02/01/2023
 
 # Set logging - Send logs to stdout as well as Unified Log
 # Use 'log show --process "logger"'to view logs activity.
@@ -35,11 +34,12 @@ swiftDialogOptions=(
   --moveable
 )
 
+attempts=6 #How many attempts at prompting the user before giving up.
+wait_time=40 #How many seconds to wait between user prompts.
 
-DisallowFindMy=false #Change to true if you want to *always* prompt the user when Find My Mac is enabled, regardless of the user-based activation lock status.
-
-wait_time=40 #How many seconds to wait until re-prompting the user.
-timeout=90 #How long to try prompting the user until giving up.
+# Change to 'true' if you want to *always* prompt the user to log out when Find My Mac
+# is enabled, regardless of user-based Activation Lock status.
+DisallowFindMy=false
 
 ##############################################################
 # VARIABLES & FUNCTIONS
@@ -76,31 +76,27 @@ done
 }
 
 UserDialog (){
-  # Check if $appIcon file exists on system, if not use standard dialog. If
-  # Kandji agent is not installed, default to applescript dialog.
-  
   #First check if the app icon exists
   if [ -e "$appIcon" ]; then
     iconCMD=(--icon "$appIcon")
   else
-    #If the icon file doesn't exist, set an empty array
+    #If the icon file doesn't exist, set an empty array to omit from dialogs.
     iconCMD=()
   fi
 
   #If KandjiAgent is installed, use Kandji
   if [[ -d "$KandjiAgent" ]]; then
     /usr/local/bin/kandji display-alert --title "$dialogTitle" --message "$dialogMessage" ${iconCMD[@]}
-  #No Kandji, but if SwiftDialog is installed then use SwiftDialog
+  #No Kandji, and SwiftDialog is installed, use SwiftDialog
   elif [[ -e "$dialogPath" && -e "$dialogApp" ]]; then
     "$dialogPath" --title "$dialogTitle" --message "$dialogMessage" ${swiftDialogOptions[@]} ${iconCMD[@]}
-  #No Kandji and no SwiftDialog so default to osascript
+  #No Kandji and no SwiftDialog, default to osascript w/ icon.
   elif [ -e "$appIcon" ]; then
     /usr/bin/osascript -e 'display dialog "'$dialogMessage'" with title "'$dialogTitle'" with icon POSIX file "'$appIcon'" buttons {"Okay"} default button 1 giving up after 15'
-  #Else No Kandji, no SwiftDialog, and no appicon. Use osascript with the default icon
+  #No Kandji, no SwiftDialog, and no appicon. Use osascript.
   else
     /usr/bin/osascript -e 'display dialog "'$dialogMessage'" with title "'$dialogTitle'" buttons {"Okay"} default button 1 giving up after 15'
   fi
-
 }
 
 ##############################################################
@@ -116,12 +112,12 @@ elif [[ $activationLock == "Enabled" ]]; then
   LOGGING "--- User-Based Activation Lock is: Enabled. Checking local users..."
   UserLookup
   #Determine the FindMy enabled user and see if it matches the currently logged in user.
-  SECONDS=0
   if [[ -f "$plist" && "$FindMyUser" == "$currentUser" ]]; then
+    dialogAttempts=0
     until [[ $activationLock == "Disabled" ]]
       do
-        if (( $SECONDS > $timeout )); then
-          LOGGING "Prompts have been ignored for more than $timeout seconds. Giving up..."
+        if (( $dialogAttempts >= $attempts )); then
+          LOGGING "Prompts have been ignored after $attempts attempts. Giving up..."
           exit 1
         fi
         LOGGING "--- Found logged in iCloud account '$FindMyUser'... Presenting pane to user and requesting user to log out..."
@@ -129,6 +125,7 @@ elif [[ $activationLock == "Enabled" ]]; then
         osascript -e 'tell application "System Settings"' -e 'activate' -e 'end tell'
         UserDialog
         sleep $wait_time
+        ((dialogAttempts++))
         export activationLock=$(/usr/sbin/system_profiler SPHardwareDataType | awk '/Activation Lock Status/{print $NF}')
       done
     LOGGING "Activation Lock Status: $activationLock"
@@ -146,11 +143,13 @@ elif [[ $activationLock == "Enabled" ]]; then
   fi
 else
   UserLookup
+  # Always prompt if Find My Mac is enabled (optional)
   if [[ $DisallowFindMy == true && "$FindMyUser" == "$currentUser" ]]; then
+    dialogAttempts=0
     until [[ $FindMyEnabled == false ]]
       do
-        if (( $SECONDS > $timeout )); then
-        LOGGING "Prompts have been ignored for more than $timeout seconds. Giving up..."
+        if (( $dialogAttempts >= $attempts )); then
+        LOGGING "Prompts have been ignored after $attempts attempts. Giving up..."
         exit 1
         fi
         LOGGING "--- Found logged in iCloud account for user '$FindMyUser' with account '$FindMyEmail'... Presenting pane to user and requesting user to log out of Find My Mac."
@@ -158,6 +157,7 @@ else
         osascript -e 'tell application "System Settings"' -e 'activate' -e 'end tell'
         UserDialog
         sleep $wait_time
+        ((dialogAttempts++))
         #export FindMyStatus
         export FindMyEnabled=$(/usr/libexec/PlistBuddy -c print "$plist" | grep -A1 "FIND_MY_MAC" | awk 'FNR == 2 {print $3}')
       done
