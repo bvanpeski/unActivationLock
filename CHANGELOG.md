@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added ability to always prompt user to log out of Find My regardless of activation lock status.
 - Script now grabs the iCloud email address of the user who activation locked the device.
 - Added user input for sleep timer between prompts.
-- Added timeout w/ user input.
+- Added user input for number of attempts to make before giving up.
 - Added System Settings activate command to account for edge cases where System Settings would launch behind other windows.
 - Added SwiftDialog support (Thanks to Trevor Sysock @BigMacAdmin)
 ### Changed
