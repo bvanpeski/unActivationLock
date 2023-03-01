@@ -10,8 +10,8 @@
 ########################################################################################
 # Created by Brian Van Peski - macOS Adventures
 ########################################################################################
-# Current version: 1.5 | See CHANGELOG for full version history.
-# Updated: 02/01/2023
+# Current version: 1.5.1 | See CHANGELOG for full version history.
+# Updated: 03/01/2023
 
 # Set logging - Send logs to stdout as well as Unified Log
 # Use 'log show --process "logger"'to view logs activity.
@@ -92,10 +92,10 @@ UserDialog (){
     "$dialogPath" --title "$dialogTitle" --message "$dialogMessage" ${swiftDialogOptions[@]} ${iconCMD[@]}
   #No Kandji and no SwiftDialog, default to osascript w/ icon.
   elif [ -e "$appIcon" ]; then
-    /usr/bin/osascript -e 'display dialog "'$dialogMessage'" with title "'$dialogTitle'" with icon POSIX file "'$appIcon'" buttons {"Okay"} default button 1 giving up after 15'
+    /usr/bin/osascript -e 'display dialog "'"$dialogMessage"'" with title "'"$dialogTitle"'" with icon POSIX file "'"$appIcon"'" buttons {"Okay"} default button 1 giving up after 15'
   #No Kandji, no SwiftDialog, and no appicon. Use osascript.
   else
-    /usr/bin/osascript -e 'display dialog "'$dialogMessage'" with title "'$dialogTitle'" buttons {"Okay"} default button 1 giving up after 15'
+    /usr/bin/osascript -e 'display dialog "'"$dialogMessage"'" with title "'"$dialogTitle"'" buttons {"Okay"} default button 1 giving up after 15'
   fi
 }
 
