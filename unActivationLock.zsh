@@ -10,8 +10,8 @@
 ########################################################################################
 # Created by Brian Van Peski - macOS Adventures
 ########################################################################################
-# Current version: 1.5.1 | See CHANGELOG for full version history.
-# Updated: 03/01/2023
+# Current version: 1.5.2 | See CHANGELOG for full version history.
+# Updated: 06/05/2023
 
 # Set logging - Send logs to stdout as well as Unified Log
 # Use 'log show --process "logger"'to view logs activity.
@@ -131,8 +131,12 @@ elif [[ $activationLock == "Enabled" ]]; then
     LOGGING "Activation Lock Status: $activationLock"
     exit 0
     elif [[ $activationLock == "Enabled" && -z $FindMyUser ]]; then
-      LOGGING "Activation lock status is $activationLock, and there are no users with a FindMy token associated. Something is wonky..."
-      #I don't think this can happen, but leaving it here just in case.
+      if /usr/sbin/nvram -xp | grep fmm-mobileme-token-FMM > /dev/null 2>&1; then
+        FindMyMac="Enabled"
+      else
+        FindMyMac="Disabled"
+      fi
+      LOGGING "--- Activation lock status is $activationLock, and there are no users with a FindMy token associated. FindMyMac is $FindMyMac on this computer. The cached activation lock status or FindMy status in the user's MobileMeAccounts.plist may be incorrect. Alerting admin for further troubleshooting..."
       exit 1
     else
       LOGGING "--- The currently logged in user: '$currentUser' is not the user associated with the Activation Lock.

@@ -38,6 +38,10 @@ I've set the FindMy icon as the default, since that helps the end-user visually 
   * Alternatively, if you have configured your MDM to `Allowed user-based Activation Lock', then activation lock will become active again once they turn Find My mac back on.
 * Why didn't you just use `nvram fmm-mobileme-token-FMM` to determine Activation Lock status?
   * That reports on whether FindMy is enabled, regardless of actual Activation Lock status.
+* The script says the device is still activation locked but can't find any users with Find My enabled.
+  * There are edge cases where this can occur. In instances where an activation lock is enabled and a user DOES have Find My enabled, it typically resolves itself eventually. There are rare instances where a user doesn't have a FindMy status written to their `MobileMeAccounts.plist` when the script runs.
+  * Another scenario that can occur is the user logs out of iCloud but the activation lock isn't successfully removed. In this scenario you can end up with a device where activation lock is enabled but there's no currently logged in user with Find My enabled. You can work around this by logging into another iCloud account and logging back out.
+  * Keep in mind that the source of truth for Activation Lock status lives on Apple's servers. This script is leveraging a cached version of that status locally, but there are edge cases where that cached status can be incorrect resulting in unexpected behavior.
   
 ## What's Next?
 * I've added everything I've wanted to see so far. Anything else you want to see in the next version? Weird Activation Lock edge cases? Let me know!
