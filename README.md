@@ -24,6 +24,12 @@ I've set the FindMy icon as the default, since that helps the end-user visually 
 
 ![](images/screenshot.png)
 
+## Troubleshooting
+* **Reading the Logs**
+  * You probably have logs from the script in your MDM, but if you need to grab them locally on a machine you can grep them out of the unified log. `log show --style compact --process "logger" | grep "UnActivationLock"`
+* **Run the script as zsh**
+  * The most common issue that people run into is running the script as a bash script rather than as zsh. Zsh has been the default shell on macOS since macOS 10.15 Catalina. If your MDM does not support running scripts as zsh, I encourage you to reach out to them and request that they support zsh, which has been the default shell on macOS since October 2019.
+
 ## FAQ
 * Does this work for both Manual and ADE enrollments?
   * Yes, either way if your MDM supports it, the default MDM behavior should be to DISALLOW user-based Activation lock. The important part to note here is that it *prevents* a device from becoming activation locked. It can't undo an Activation Lock that is already in place. That's why enrolling a device via ADE is the BEST way to ensure that the "disallow Activation Lock" key is in place, since with Automated Device Enrollment, the device itself is managed by the MDM BEFORE the user enters their iCloud account and/or turns on Find My Mac.
