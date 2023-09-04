@@ -31,20 +31,20 @@ I've set the FindMy icon as the default, since that helps the end-user visually 
   * The most common issue that people run into is running the script as a bash script rather than as zsh. Zsh has been the default shell on macOS since macOS 10.15 Catalina. If your MDM does not support running scripts as zsh, I encourage you to reach out to them and request that they support zsh, which has been the default shell on macOS since October 2019.
 
 ## FAQ
-* Does this work for both Manual and ADE enrollments?
+* **Does this work for both Manual and ADE enrollments?**
   * Yes, either way if your MDM supports it, the default MDM behavior should be to DISALLOW user-based Activation lock. The important part to note here is that it *prevents* a device from becoming activation locked. It can't undo an Activation Lock that is already in place. That's why enrolling a device via ADE is the BEST way to ensure that the "disallow Activation Lock" key is in place, since with Automated Device Enrollment, the device itself is managed by the MDM BEFORE the user enters their iCloud account and/or turns on Find My Mac.
-* What happens if someone turns Find My Mac back on after disabling it?
+* **What happens if someone turns Find My Mac back on after disabling it?**
   * The device will continue to NOT be activation locked, assuming the MDM laid down the `Disallow Activation Lock` key.
-* What if the device was activation locked by the MDM?
+* **What if the device was activation locked by the MDM?**
   * Device-based Activation Lock only applies to iOS and iPadOS devices.
-* What if I have multiple users?
+* **What if I have multiple users?**
   * The script accounts for that and reports out which user caused the Activation Lock.
-* Is there any way for a user to reactivate the activation lock after I've successfully disabled it?
+* **Is there any way for a user to reactivate the activation lock after I've successfully disabled it?**
   * If the device was manually enrolled AND the user has admin rights, activation lock would be reactivated once that MDM Profile is removed (either on the next reboot, or if the user toggles Find My off and on again).
   * Alternatively, if you have configured your MDM to `Allowed user-based Activation Lock', then activation lock will become active again once they turn Find My mac back on.
-* Why didn't you just use `nvram fmm-mobileme-token-FMM` to determine Activation Lock status?
+* **Why didn't you just use `nvram fmm-mobileme-token-FMM` to determine Activation Lock status?**
   * That reports on whether FindMy is enabled, regardless of actual Activation Lock status.
-* The script says the device is still activation locked but can't find any users with Find My enabled.
+* **The script says the device is still activation locked but can't find any users with Find My enabled.**
   * There are edge cases where this can occur. In instances where an activation lock is enabled and a user DOES have Find My enabled, it typically resolves itself eventually. There are rare instances where a user doesn't have a FindMy status written to their `MobileMeAccounts.plist` when the script runs.
   * Another scenario that can occur is the user logs out of iCloud but the activation lock isn't successfully removed. In this scenario you can end up with a device where activation lock is enabled but there's no currently logged in user with Find My enabled. You can work around this by logging into another iCloud account and logging back out.
   * Keep in mind that the source of truth for Activation Lock status lives on Apple's servers. This script is leveraging a cached version of that status locally, but there are edge cases where that cached status can be incorrect resulting in unexpected behavior.
