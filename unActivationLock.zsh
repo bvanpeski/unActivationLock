@@ -10,8 +10,8 @@
 ########################################################################################
 # Created by Brian Van Peski - macOS Adventures
 ########################################################################################
-# Current version: 1.5.2 | See CHANGELOG for full version history.
-# Updated: 06/05/2023
+# Current version: 1.6 | See CHANGELOG for full version history.
+# Updated: 12/21/2023
 
 # Set logging - Send logs to stdout as well as Unified Log
 # Use 'log show --process "logger"'to view logs activity.
@@ -25,7 +25,7 @@ function LOGGING {
 ##############################################################
 # Messaging
 dialogTitle="Turn off Find My Mac"
-dialogMessage="This company device is currently locked to your iCloud account. Please turn off Find My Mac under iCloud > Find My Mac."
+dialogMessage="This company device is currently locked to your iCloud account. Please turn off Find My Mac under iCloud > Show More Apps > Find My Mac."
 appIcon="/System/Library/PrivateFrameworks/AOSUI.framework/Versions/A/Resources/findmy.icns" #Path to app icon for messaging (optional)
 # SwiftDialog Options
 swiftDialogOptions=(
@@ -44,7 +44,8 @@ DisallowFindMy=false
 ##############################################################
 # VARIABLES & FUNCTIONS
 ##############################################################
-currentUser=$(ls -la /dev/console | awk '{print $3}')
+currentUser=$(scutil <<< "show State:/Users/ConsoleUser" | awk '/Name :/ && ! /loginwindow/ { print $3 }' )
+uid=$(id -u "$currentUser")
 activationLock=$(/usr/sbin/system_profiler SPHardwareDataType | awk '/Activation Lock Status/{print $NF}')
 plist="/Users/$currentUser/Library/Preferences/MobileMeAccounts.plist"
 DEPStatus=$(profiles status -type enrollment | grep "Enrolled via DEP" | awk '{print $4}')
@@ -53,6 +54,17 @@ KandjiAgent="/Library/Kandji/Kandji Agent.app"
 #Path to SwiftDialog
 dialogPath="/usr/local/bin/dialog"
 dialogApp="/Library/Application Support/Dialog/Dialog.app"
+
+runAsUser() {
+  # From https://scriptingosx.com/2020/08/running-a-command-as-another-user
+  if [ "$currentUser" != "loginwindow" ]; then
+    launchctl asuser "$uid" sudo -u "$currentUser" "$@"
+  else
+    echo "No user logged in"
+    # Uncomment the exit command to make the function exit with an error when no user is logged in
+    # exit 1
+  fi
+}
 
 UserLookup (){
 ## Fetch all local user accounts, return account with iCloud FindMyStatus enabled.
@@ -92,10 +104,10 @@ UserDialog (){
     "$dialogPath" --title "$dialogTitle" --message "$dialogMessage" ${swiftDialogOptions[@]} ${iconCMD[@]}
   #No Kandji and no SwiftDialog, default to osascript w/ icon.
   elif [ -e "$appIcon" ]; then
-    /usr/bin/osascript -e 'display dialog "'"$dialogMessage"'" with title "'"$dialogTitle"'" with icon POSIX file "'"$appIcon"'" buttons {"Okay"} default button 1 giving up after 15'
+    runAsUser /usr/bin/osascript -e 'display dialog "'"$dialogMessage"'" with title "'"$dialogTitle"'" with icon POSIX file "'"$appIcon"'" buttons {"Okay"} default button 1 giving up after 15'
   #No Kandji, no SwiftDialog, and no appicon. Use osascript.
   else
-    /usr/bin/osascript -e 'display dialog "'"$dialogMessage"'" with title "'"$dialogTitle"'" buttons {"Okay"} default button 1 giving up after 15'
+    runAsUser /usr/bin/osascript -e 'display dialog "'"$dialogMessage"'" with title "'"$dialogTitle"'" buttons {"Okay"} default button 1 giving up after 15'
   fi
 }
 
@@ -122,7 +134,7 @@ elif [[ $activationLock == "Enabled" ]]; then
         fi
         LOGGING "--- Found logged in iCloud account '$FindMyUser'... Presenting pane to user and requesting user to log out..."
         open "x-apple.systempreferences:com.apple.preferences.AppleIDPrefPane?iCloud"
-        osascript -e 'tell application "System Settings"' -e 'activate' -e 'end tell'
+        runAsUser osascript -e 'tell application "System Settings"' -e 'activate' -e 'end tell'
         UserDialog
         sleep $wait_time
         ((dialogAttempts++))
@@ -157,8 +169,8 @@ else
         exit 1
         fi
         LOGGING "--- Found logged in iCloud account for user '$FindMyUser' with account '$FindMyEmail'... Presenting pane to user and requesting user to log out of Find My Mac."
-        open "x-apple.systempreferences:com.apple.preferences.AppleIDPrefPane?iCloud"
-        osascript -e 'tell application "System Settings"' -e 'activate' -e 'end tell'
+        runAsUser open "x-apple.systempreferences:com.apple.preferences.AppleIDPrefPane?iCloud"
+        runAsUser osascript -e 'tell application "System Settings"' -e 'activate' -e 'end tell'
         UserDialog
         sleep $wait_time
         ((dialogAttempts++))
