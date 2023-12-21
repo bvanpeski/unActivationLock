@@ -25,7 +25,7 @@ function LOGGING {
 ##############################################################
 # Messaging
 dialogTitle="Turn off Find My Mac"
-dialogMessage="This company device is currently locked to your iCloud account. Please turn off Find My Mac under iCloud > Find My Mac."
+dialogMessage="This company device is currently locked to your iCloud account. Please turn off Find My Mac under iCloud > Show More Apps > Find My Mac."
 appIcon="/System/Library/PrivateFrameworks/AOSUI.framework/Versions/A/Resources/findmy.icns" #Path to app icon for messaging (optional)
 # SwiftDialog Options
 swiftDialogOptions=(
