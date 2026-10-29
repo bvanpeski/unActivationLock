@@ -24,9 +24,14 @@ function LOGGING {
 # USER INPUT 
 ##############################################################
 # Messaging
-dialogTitle="Turn off Find My Mac"
-dialogMessage="This company device is currently locked to your iCloud account. Please turn off Find My Mac under iCloud > Show More Apps > Find My Mac."
-appIcon="/System/Library/PrivateFrameworks/AOSUI.framework/Versions/A/Resources/findmy.icns" #Path to app icon for messaging (optional)
+dialogTitle="Action Required: Turn Off Find My Mac"
+dialogMessage="This Mac is managed by IT and is currently Activation Locked to your personal iCloud account. To keep it working after updates or repairs, please turn off Find My Mac: open System Settings, click your name (Apple ID) at the top, click iCloud, then Show More Apps, select Find My Mac, and turn it off. Your files, apps, and other settings are not affected. Contact the IT Help Desk if you need assistance."
+# Path to app icon for messaging (optional). Points to the company logo deployed
+# via Kandji. If this file is missing at runtime the script omits the icon
+# gracefully (see iconCMD logic in UserDialog), so deploy the logo before/with
+# this script. Fallback icon if you'd rather use a built-in:
+# /System/Library/PrivateFrameworks/AOSUI.framework/Versions/A/Resources/findmy.icns
+appIcon="/Library/Kandji/logo.png"
 # SwiftDialog Options
 swiftDialogOptions=(
   --mini
